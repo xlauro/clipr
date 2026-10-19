@@ -1,0 +1,31 @@
+[package]
+name = "clipr-app"
+version = "0.1.0"
+edition = "2024"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+
+clipr-domain.workspace = true
+clipr-persistence.workspace = true
+clipr-media.workspace = true
+clipr-ai.workspace = true
+clipr-youtube.workspace = true
+open = "5.3"
+dirs.workspace = true
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

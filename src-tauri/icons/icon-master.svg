@@ -1,0 +1,435 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Filtros de Sombra e Glow Master -->
+    <filter id="app-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="36" stdDeviation="40" flood-color="#020108" flood-opacity="0.82"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#140b2a" flood-opacity="0.5"/>
+    </filter>
+
+    <filter id="glow-gold-master" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="b1"/>
+      <feGaussianBlur stdDeviation="18" result="b2"/>
+      <feGaussianBlur stdDeviation="44" result="b3"/>
+      <feMerge>
+        <feMergeNode in="b3"/>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="glow-cyan-master" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="b1"/>
+      <feGaussianBlur stdDeviation="26" result="b2"/>
+      <feMerge>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="glow-pink-master" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="b1"/>
+      <feGaussianBlur stdDeviation="28" result="b2"/>
+      <feMerge>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="blade-depth-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="4" dy="18" stdDeviation="16" flood-color="#03020c" flood-opacity="0.75"/>
+    </filter>
+
+    <!-- Fundo Squircle (Obsidian / Midnight Indigo) -->
+    <linearGradient id="bg-canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#110E28"/>
+      <stop offset="30%" stop-color="#161236"/>
+      <stop offset="70%" stop-color="#1B1745"/>
+      <stop offset="100%" stop-color="#080614"/>
+    </linearGradient>
+
+    <!-- Borda Squircle com Gradiente Neon -->
+    <linearGradient id="border-squircle" x1="0.1" y1="0.05" x2="0.9" y2="0.95">
+      <stop offset="0%" stop-color="#818CF8" stop-opacity="0.85"/>
+      <stop offset="28%" stop-color="#C084FC" stop-opacity="0.55"/>
+      <stop offset="68%" stop-color="#EC4899" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Iluminação Ambiente de Fundo -->
+    <radialGradient id="amb-indigo" cx="28%" cy="24%" r="55%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.4"/>
+      <stop offset="65%" stop-color="#4F46E5" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#4338CA" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="amb-pink" cx="78%" cy="76%" r="55%">
+      <stop offset="0%" stop-color="#EC4899" stop-opacity="0.32"/>
+      <stop offset="60%" stop-color="#DB2777" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#9D174D" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="amb-cyan" cx="22%" cy="82%" r="50%">
+      <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.22"/>
+      <stop offset="60%" stop-color="#0891B2" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Máscara de Desvanecimento Suave nas Extremidades da Fita de Vídeo (Luminância) -->
+    <linearGradient id="strip-mask-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="18%" stop-color="#FFFFFF"/>
+      <stop offset="82%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+
+    <mask id="strip-fade-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect x="0" y="0" width="1024" height="1024" fill="url(#strip-mask-grad)"/>
+    </mask>
+
+    <!-- Lâmina Superior (Índigo Profundo para Ciano Elétrico e Borda Cromada) -->
+    <linearGradient id="blade-upper-main" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#312E81"/>
+      <stop offset="25%" stop-color="#4F46E5"/>
+      <stop offset="60%" stop-color="#6366F1"/>
+      <stop offset="85%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+
+    <linearGradient id="blade-upper-edge" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="50%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+
+    <!-- Lâmina Inferior (Magenta Neon / Rosa Choque / Violeta) -->
+    <linearGradient id="blade-lower-main" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4C1D95"/>
+      <stop offset="25%" stop-color="#7C3AED"/>
+      <stop offset="60%" stop-color="#BE185D"/>
+      <stop offset="85%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#F43F5E"/>
+    </linearGradient>
+
+    <linearGradient id="blade-lower-edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F472B6"/>
+      <stop offset="60%" stop-color="#FB7185"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+
+    <!-- Alças Ergonômicas dos Cabos -->
+    <linearGradient id="handle-top-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="40%" stop-color="#6366F1"/>
+      <stop offset="85%" stop-color="#4338CA"/>
+      <stop offset="100%" stop-color="#312E81"/>
+    </linearGradient>
+
+    <linearGradient id="handle-bottom-grad" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#E879F9"/>
+      <stop offset="40%" stop-color="#C026D3"/>
+      <stop offset="85%" stop-color="#86198F"/>
+      <stop offset="100%" stop-color="#581C87"/>
+    </linearGradient>
+
+    <!-- Fita de Vídeo Vertical -->
+    <linearGradient id="film-grad-fill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#141135" stop-opacity="0.92"/>
+      <stop offset="50%" stop-color="#221B54" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#120E30" stop-opacity="0.92"/>
+    </linearGradient>
+
+    <linearGradient id="film-grad-border" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="35%" stop-color="#818CF8"/>
+      <stop offset="70%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+
+    <linearGradient id="frame-grad-1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0.45"/>
+    </linearGradient>
+
+    <linearGradient id="frame-grad-2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0.5"/>
+    </linearGradient>
+
+    <!-- Sparkles de IA -->
+    <linearGradient id="gold-star" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="25%" stop-color="#FEF08A"/>
+      <stop offset="65%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+
+    <linearGradient id="cyan-star" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="30%" stop-color="#A5F3FC"/>
+      <stop offset="70%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#0891B2"/>
+    </linearGradient>
+
+    <linearGradient id="pink-star" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="35%" stop-color="#FCE7F3"/>
+      <stop offset="70%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#DB2777"/>
+    </linearGradient>
+
+    <radialGradient id="pivot-core-grad" cx="42%" cy="40%" r="58%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="30%" stop-color="#FEF08A"/>
+      <stop offset="65%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#92400E"/>
+    </radialGradient>
+
+    <clipPath id="squircle-clip">
+      <rect x="72" y="72" width="880" height="880" rx="200" ry="200"/>
+    </clipPath>
+  </defs>
+
+  <!-- Sombra Suave e Volumétrica do Ícone -->
+  <rect x="72" y="72" width="880" height="880" rx="200" ry="200" fill="#090716" filter="url(#app-shadow)"/>
+
+  <!-- Conteúdo Recortado do Squircle -->
+  <g clip-path="url(#squircle-clip)">
+    <!-- Fundo Escuro Obsidian / Midnight -->
+    <rect x="72" y="72" width="880" height="880" fill="url(#bg-canvas)"/>
+
+    <!-- Atmosferas Radiantes de Luz -->
+    <circle cx="280" cy="240" r="450" fill="url(#amb-indigo)"/>
+    <circle cx="760" cy="740" r="420" fill="url(#amb-pink)"/>
+    <circle cx="220" cy="800" r="350" fill="url(#amb-cyan)"/>
+
+    <!-- Grade Tecnológica Sutil de Fundo -->
+    <g opacity="0.12">
+      <line x1="512" y1="100" x2="512" y2="924" stroke="#818CF8" stroke-width="1.5" stroke-dasharray="4 6"/>
+      <line x1="100" y1="512" x2="924" y2="512" stroke="#818CF8" stroke-width="1.5" stroke-dasharray="4 6"/>
+      <circle cx="512" cy="512" r="320" fill="none" stroke="#A5B4FC" stroke-width="1.5" stroke-dasharray="6 8"/>
+    </g>
+
+    <!-- FITA DE VÍDEO VERTICAL COM DESVANECIMENTO SUAVE -->
+    
+    <!-- ROLO / FITA DE VÍDEO VERTICAL (9:16 SHORTS FORMAT) COM DESVANECIMENTO SUAVE -->
+    <g id="vertical-film-strip" mask="url(#strip-fade-mask)">
+      <!-- Glow da Fita -->
+      <path d="M 579.4,70.0 L 576.7,84.3 L 574.1,98.7 L 571.5,113.0 L 569.0,127.3 L 566.6,141.7 L 564.3,156.0 L 562.2,170.3 L 560.3,184.7 L 558.5,199.0 L 557.0,213.3 L 555.7,227.7 L 554.6,242.0 L 553.8,256.3 L 553.3,270.7 L 553.0,285.0 L 553.0,299.3 L 553.3,313.7 L 553.9,328.0 L 554.7,342.3 L 555.7,356.7 L 557.0,371.0 L 558.6,385.3 L 560.3,399.7 L 562.3,414.0 L 564.4,428.3 L 566.6,442.7 L 569.1,457.0 L 571.6,471.3 L 574.1,485.7 L 576.8,500.0 L 694.8,500.0 L 692.1,485.7 L 689.6,471.3 L 687.1,457.0 L 684.6,442.7 L 682.4,428.3 L 680.3,414.0 L 678.3,399.7 L 676.6,385.3 L 675.0,371.0 L 673.7,356.7 L 672.7,342.3 L 671.9,328.0 L 671.3,313.7 L 671.0,299.3 L 671.0,285.0 L 671.3,270.7 L 671.8,256.3 L 672.6,242.0 L 673.7,227.7 L 675.0,213.3 L 676.5,199.0 L 678.3,184.7 L 680.2,170.3 L 682.3,156.0 L 684.6,141.7 L 687.0,127.3 L 689.5,113.0 L 692.1,98.7 L 694.7,84.3 L 697.4,70.0 Z" fill="none" stroke="#06B6D4" stroke-width="6" opacity="0.25" filter="url(#glow-cyan-master)"/>
+      <path d="M 581.2,524.0 L 583.9,538.3 L 586.4,552.7 L 588.9,567.0 L 591.4,581.3 L 593.6,595.7 L 595.7,610.0 L 597.7,624.3 L 599.4,638.7 L 601.0,653.0 L 602.3,667.3 L 603.3,681.7 L 604.1,696.0 L 604.7,710.3 L 605.0,724.7 L 605.0,739.0 L 604.7,753.3 L 604.2,767.7 L 603.4,782.0 L 602.3,796.3 L 601.0,810.7 L 599.5,825.0 L 597.7,839.3 L 595.8,853.7 L 593.7,868.0 L 591.4,882.3 L 589.0,896.7 L 586.5,911.0 L 583.9,925.3 L 581.3,939.7 L 578.6,954.0 L 696.6,954.0 L 699.3,939.7 L 701.9,925.3 L 704.5,911.0 L 707.0,896.7 L 709.4,882.3 L 711.7,868.0 L 713.8,853.7 L 715.7,839.3 L 717.5,825.0 L 719.0,810.7 L 720.3,796.3 L 721.4,782.0 L 722.2,767.7 L 722.7,753.3 L 723.0,739.0 L 723.0,724.7 L 722.7,710.3 L 722.1,696.0 L 721.3,681.7 L 720.3,667.3 L 719.0,653.0 L 717.4,638.7 L 715.7,624.3 L 713.7,610.0 L 711.6,595.7 L 709.4,581.3 L 706.9,567.0 L 704.4,552.7 L 701.9,538.3 L 699.2,524.0 Z" fill="none" stroke="#EC4899" stroke-width="6" opacity="0.25" filter="url(#glow-pink-master)"/>
+
+      <!-- Corpo da Fita Superior (Antes do Corte) -->
+      <path d="M 579.4,70.0 L 576.7,84.3 L 574.1,98.7 L 571.5,113.0 L 569.0,127.3 L 566.6,141.7 L 564.3,156.0 L 562.2,170.3 L 560.3,184.7 L 558.5,199.0 L 557.0,213.3 L 555.7,227.7 L 554.6,242.0 L 553.8,256.3 L 553.3,270.7 L 553.0,285.0 L 553.0,299.3 L 553.3,313.7 L 553.9,328.0 L 554.7,342.3 L 555.7,356.7 L 557.0,371.0 L 558.6,385.3 L 560.3,399.7 L 562.3,414.0 L 564.4,428.3 L 566.6,442.7 L 569.1,457.0 L 571.6,471.3 L 574.1,485.7 L 576.8,500.0 L 694.8,500.0 L 692.1,485.7 L 689.6,471.3 L 687.1,457.0 L 684.6,442.7 L 682.4,428.3 L 680.3,414.0 L 678.3,399.7 L 676.6,385.3 L 675.0,371.0 L 673.7,356.7 L 672.7,342.3 L 671.9,328.0 L 671.3,313.7 L 671.0,299.3 L 671.0,285.0 L 671.3,270.7 L 671.8,256.3 L 672.6,242.0 L 673.7,227.7 L 675.0,213.3 L 676.5,199.0 L 678.3,184.7 L 680.2,170.3 L 682.3,156.0 L 684.6,141.7 L 687.0,127.3 L 689.5,113.0 L 692.1,98.7 L 694.7,84.3 L 697.4,70.0 Z" fill="url(#film-grad-fill)"/>
+      <path d="M 579.4,70.0 L 576.7,84.3 L 574.1,98.7 L 571.5,113.0 L 569.0,127.3 L 566.6,141.7 L 564.3,156.0 L 562.2,170.3 L 560.3,184.7 L 558.5,199.0 L 557.0,213.3 L 555.7,227.7 L 554.6,242.0 L 553.8,256.3 L 553.3,270.7 L 553.0,285.0 L 553.0,299.3 L 553.3,313.7 L 553.9,328.0 L 554.7,342.3 L 555.7,356.7 L 557.0,371.0 L 558.6,385.3 L 560.3,399.7 L 562.3,414.0 L 564.4,428.3 L 566.6,442.7 L 569.1,457.0 L 571.6,471.3 L 574.1,485.7 L 576.8,500.0" fill="none" stroke="url(#film-grad-border)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 697.4,70.0 L 694.7,84.3 L 692.1,98.7 L 689.5,113.0 L 687.0,127.3 L 684.6,141.7 L 682.3,156.0 L 680.2,170.3 L 678.3,184.7 L 676.5,199.0 L 675.0,213.3 L 673.7,227.7 L 672.6,242.0 L 671.8,256.3 L 671.3,270.7 L 671.0,285.0 L 671.0,299.3 L 671.3,313.7 L 671.9,328.0 L 672.7,342.3 L 673.7,356.7 L 675.0,371.0 L 676.6,385.3 L 678.3,399.7 L 680.3,414.0 L 682.4,428.3 L 684.6,442.7 L 687.1,457.0 L 689.6,471.3 L 692.1,485.7 L 694.8,500.0" fill="none" stroke="url(#film-grad-border)" stroke-width="3" stroke-linecap="round"/>
+      
+      <!-- Corpo da Fita Inferior (Após o Corte) -->
+      <path d="M 581.2,524.0 L 583.9,538.3 L 586.4,552.7 L 588.9,567.0 L 591.4,581.3 L 593.6,595.7 L 595.7,610.0 L 597.7,624.3 L 599.4,638.7 L 601.0,653.0 L 602.3,667.3 L 603.3,681.7 L 604.1,696.0 L 604.7,710.3 L 605.0,724.7 L 605.0,739.0 L 604.7,753.3 L 604.2,767.7 L 603.4,782.0 L 602.3,796.3 L 601.0,810.7 L 599.5,825.0 L 597.7,839.3 L 595.8,853.7 L 593.7,868.0 L 591.4,882.3 L 589.0,896.7 L 586.5,911.0 L 583.9,925.3 L 581.3,939.7 L 578.6,954.0 L 696.6,954.0 L 699.3,939.7 L 701.9,925.3 L 704.5,911.0 L 707.0,896.7 L 709.4,882.3 L 711.7,868.0 L 713.8,853.7 L 715.7,839.3 L 717.5,825.0 L 719.0,810.7 L 720.3,796.3 L 721.4,782.0 L 722.2,767.7 L 722.7,753.3 L 723.0,739.0 L 723.0,724.7 L 722.7,710.3 L 722.1,696.0 L 721.3,681.7 L 720.3,667.3 L 719.0,653.0 L 717.4,638.7 L 715.7,624.3 L 713.7,610.0 L 711.6,595.7 L 709.4,581.3 L 706.9,567.0 L 704.4,552.7 L 701.9,538.3 L 699.2,524.0 Z" fill="url(#film-grad-fill)"/>
+      <path d="M 581.2,524.0 L 583.9,538.3 L 586.4,552.7 L 588.9,567.0 L 591.4,581.3 L 593.6,595.7 L 595.7,610.0 L 597.7,624.3 L 599.4,638.7 L 601.0,653.0 L 602.3,667.3 L 603.3,681.7 L 604.1,696.0 L 604.7,710.3 L 605.0,724.7 L 605.0,739.0 L 604.7,753.3 L 604.2,767.7 L 603.4,782.0 L 602.3,796.3 L 601.0,810.7 L 599.5,825.0 L 597.7,839.3 L 595.8,853.7 L 593.7,868.0 L 591.4,882.3 L 589.0,896.7 L 586.5,911.0 L 583.9,925.3 L 581.3,939.7 L 578.6,954.0" fill="none" stroke="url(#film-grad-border)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 699.2,524.0 L 701.9,538.3 L 704.4,552.7 L 706.9,567.0 L 709.4,581.3 L 711.6,595.7 L 713.7,610.0 L 715.7,624.3 L 717.4,638.7 L 719.0,653.0 L 720.3,667.3 L 721.3,681.7 L 722.1,696.0 L 722.7,710.3 L 723.0,724.7 L 723.0,739.0 L 722.7,753.3 L 722.2,767.7 L 721.4,782.0 L 720.3,796.3 L 719.0,810.7 L 717.5,825.0 L 715.7,839.3 L 713.8,853.7 L 711.7,868.0 L 709.4,882.3 L 707.0,896.7 L 704.5,911.0 L 701.9,925.3 L 699.3,939.7 L 696.6,954.0" fill="none" stroke="url(#film-grad-border)" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Quadros de Vídeo Internos (Frames 9:16) -->
+      <!-- Frame Superior -->
+      <rect x="594" y="240" width="86" height="152" rx="12" fill="url(#frame-grad-1)" stroke="#38BDF8" stroke-width="2" opacity="0.8"/>
+      <polygon points="632,308 648,316 632,324" fill="#FFFFFF" opacity="0.8"/>
+      <circle cx="637" cy="262" r="4" fill="#A5F3FC" opacity="0.65"/>
+
+      <!-- Frame Inferior -->
+      <rect x="592" y="580" width="86" height="152" rx="12" fill="url(#frame-grad-2)" stroke="#F472B6" stroke-width="2" opacity="0.8"/>
+      <polygon points="630,648 646,656 630,664" fill="#FFFFFF" opacity="0.8"/>
+      <circle cx="635" cy="602" r="4" fill="#FBCFE8" opacity="0.65"/>
+
+      <!-- Perfurações do Filme (Sprocket Holes) -->
+      <rect x="583.5" y="84.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="675.5" y="84.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="575.7" y="128.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="667.7" y="128.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="568.9" y="172.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="660.9" y="172.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="563.9" y="216.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="655.9" y="216.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="561.0" y="260.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="653.0" y="260.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="560.7" y="304.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="652.7" y="304.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="562.8" y="348.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="654.8" y="348.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="567.3" y="392.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="659.3" y="392.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="573.7" y="436.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="665.7" y="436.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="597.3" y="568.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="689.3" y="568.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="604.1" y="612.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="696.1" y="612.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="609.1" y="656.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="701.1" y="656.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="612.0" y="700.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="704.0" y="700.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="612.3" y="744.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="704.3" y="744.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="610.2" y="788.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="702.2" y="788.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="605.7" y="832.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="697.7" y="832.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="599.3" y="876.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="691.3" y="876.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+      <rect x="591.7" y="920.0" width="11" height="8" rx="2.5" fill="#A5F3FC" opacity="0.8"/>
+      <rect x="683.7" y="920.0" width="11" height="8" rx="2.5" fill="#FBCFE8" opacity="0.75"/>
+    </g>
+
+    <!-- O CORTE A LASER HORIZONTAL & PLAYHEAD NO INTERVALO -->
+    <g id="laser-slice-effect">
+      <!-- Feixe Laser Horizontal cortando a fita de vídeo -->
+      <line x1="560" y1="512" x2="710" y2="512" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" opacity="0.5" filter="url(#glow-cyan-master)"/>
+      <line x1="565" y1="512" x2="705" y2="512" stroke="#22D3EE" stroke-width="4" stroke-linecap="round"/>
+      <line x1="580" y1="512" x2="690" y2="512" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+
+      <!-- Playhead Scrubber na esquerda do corte -->
+      <polygon points="568,512 554,500 554,524" fill="#06B6D4" filter="url(#glow-cyan-master)"/>
+      <polygon points="567,512 556,503 556,521" fill="#FFFFFF"/>
+
+      <!-- Playhead Scrubber na direita do corte -->
+      <polygon points="702,512 716,500 716,524" fill="#EC4899" filter="url(#glow-pink-master)"/>
+      <polygon points="703,512 714,503 714,521" fill="#FFFFFF"/>
+    </g>
+
+    <!-- AS TESOURAS FUTURISTAS DE ALTA PRECISÃO (PONTAS AFINADAS EM ESTILETE) -->
+    <g id="scissors-group" filter="url(#blade-depth-shadow)">
+
+      <!-- PARTE 1: BRAÇO INFERIOR (Loop Superior Esquerdo para Blade Inferior Direito) -->
+      <g id="arm-lower-blade">
+        <!-- 1.1 Anel Superior Esquerdo -->
+        <g id="loop-upper">
+          <ellipse cx="270" cy="340" rx="84" ry="76" transform="rotate(-15 270 340)" fill="none" stroke="#6366F1" stroke-width="34" opacity="0.25" filter="url(#glow-cyan-master)"/>
+          <ellipse cx="270" cy="340" rx="84" ry="76" transform="rotate(-15 270 340)" fill="none" stroke="url(#handle-top-grad)" stroke-width="28"/>
+          <path d="M 215,310 C 235,270 295,270 330,305" fill="none" stroke="#E0E7FF" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+          <ellipse cx="270" cy="340" rx="56" ry="48" transform="rotate(-15 270 340)" fill="#0E0B22" fill-opacity="0.94"/>
+          <ellipse cx="270" cy="340" rx="56" ry="48" transform="rotate(-15 270 340)" fill="none" stroke="url(#border-squircle)" stroke-width="2" opacity="0.65"/>
+        </g>
+
+        <!-- 1.2 Haste de Conexão Superior até o Pivô -->
+        <path d="M 340,380 C 390,415 440,465 490,512 L 460,545 C 405,485 360,435 315,405 Z"
+              fill="url(#handle-top-grad)"/>
+
+        <!-- 1.3 LÂMINA INFERIOR DIREITA (Afiação estilete razor-sharp) -->
+        <path d="M 480,495 
+                 C 535,530 635,595 812,668 
+                 C 816,670 812,676 805,675 
+                 C 660,660 555,610 455,545 Z"
+              fill="url(#blade-lower-main)"/>
+        
+        <!-- Fio de Corte Chanfrado Inferior -->
+        <path d="M 480,495 C 555,540 665,605 812,668"
+              stroke="url(#blade-lower-edge)" stroke-width="5" stroke-linecap="round"/>
+        
+        <!-- Faceta Especular Reflexiva Chanfrada -->
+        <path d="M 505,520 L 780,660 L 710,650 Z" fill="#FFFFFF" opacity="0.22"/>
+      </g>
+
+      <!-- PARTE 2: BRAÇO SUPERIOR (Loop Inferior Esquerdo para Blade Superior Direito) -->
+      <g id="arm-upper-blade">
+        <!-- 2.1 Anel Inferior Esquerdo -->
+        <g id="loop-lower">
+          <ellipse cx="270" cy="680" rx="84" ry="76" transform="rotate(15 270 680)" fill="none" stroke="#EC4899" stroke-width="34" opacity="0.25" filter="url(#glow-pink-master)"/>
+          <ellipse cx="270" cy="680" rx="84" ry="76" transform="rotate(15 270 680)" fill="none" stroke="url(#handle-bottom-grad)" stroke-width="28"/>
+          <path d="M 215,710 C 235,750 295,750 330,715" fill="none" stroke="#FCE7F3" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+          <ellipse cx="270" cy="680" rx="56" ry="48" transform="rotate(15 270 680)" fill="#0E0B22" fill-opacity="0.94"/>
+          <ellipse cx="270" cy="680" rx="56" ry="48" transform="rotate(15 270 680)" fill="none" stroke="url(#border-squircle)" stroke-width="2" opacity="0.65"/>
+        </g>
+
+        <!-- 2.2 Haste de Conexão Inferior até o Pivô -->
+        <path d="M 340,640 C 390,605 440,555 490,512 L 460,480 C 405,535 360,585 315,615 Z"
+              fill="url(#handle-bottom-grad)"/>
+
+        <!-- 2.3 LÂMINA SUPERIOR DIREITA (Afiação estilete razor-sharp) -->
+        <path d="M 495,528 
+                 C 550,490 645,425 822,352 
+                 C 826,350 822,344 815,345 
+                 C 670,365 565,435 455,480 Z"
+              fill="url(#blade-upper-main)"/>
+        
+        <!-- Fio de Corte Chanfrado Superior -->
+        <path d="M 490,520 C 565,475 675,410 822,352"
+              stroke="url(#blade-upper-edge)" stroke-width="5.5" stroke-linecap="round" filter="url(#glow-cyan-master)"/>
+        
+        <!-- Faceta Especular Reflexiva Chanfrada -->
+        <path d="M 510,490 L 795,362 L 725,382 Z" fill="#FFFFFF" opacity="0.28"/>
+      </g>
+
+      <!-- PIVÔ CENTRAL: AI CORE NEXUS -->
+      <g id="ai-pivot-core">
+        <circle cx="488" cy="512" r="46" fill="#8B5CF6" opacity="0.45" filter="url(#glow-pink-master)"/>
+        <circle cx="488" cy="516" r="38" fill="#04020A" opacity="0.75"/>
+        <circle cx="488" cy="512" r="36" fill="url(#border-squircle)"/>
+        <circle cx="488" cy="512" r="30" fill="#130E2E"/>
+        <circle cx="488" cy="512" r="24" fill="none" stroke="url(#gold-star)" stroke-width="3.5" opacity="0.9"/>
+        <circle cx="488" cy="512" r="16" fill="url(#pivot-core-grad)" filter="url(#glow-gold-master)"/>
+        <circle cx="483" cy="507" r="5" fill="#FFFFFF" opacity="0.95"/>
+      </g>
+    </g>
+
+    <!-- FAÍSCAS E ESTRELAS ESTELARES DE IA (4-POINTED GEMS) -->
+    <g id="stellar-sparkles">
+      <!-- 1. GRANDE ESTRELA DOURADA DE IA (Exatamente no Ponto de Corte!) -->
+      <g transform="translate(638, 512) scale(1.45)" filter="url(#glow-gold-master)">
+        <circle cx="0" cy="0" r="34" fill="url(#gold-star)" opacity="0.32"/>
+        <path d="M 0,-48 Q 0,0 48,0 Q 0,0 0,48 Q 0,0 -48,0 Q 0,0 0,-48 Z" fill="url(#gold-star)"/>
+        <path d="M 0,-20 Q 0,0 20,0 Q 0,0 0,20 Q 0,0 -20,0 Q 0,0 0,-20 Z" fill="#FFFFFF"/>
+        <line x1="-14" y1="-14" x2="14" y2="14" stroke="#FFFBEB" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+        <line x1="14" y1="-14" x2="-14" y2="14" stroke="#FFFBEB" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+      </g>
+
+      <!-- 2. ESTRELA CIANO NEON (Próxima à Ponta da Lâmina Superior) -->
+      <g transform="translate(835, 305) scale(1.0)" filter="url(#glow-cyan-master)">
+        <circle cx="0" cy="0" r="28" fill="url(#cyan-star)" opacity="0.3"/>
+        <path d="M 0,-42 Q 0,0 42,0 Q 0,0 0,42 Q 0,0 -42,0 Q 0,0 0,-42 Z" fill="url(#cyan-star)"/>
+        <path d="M 0,-18 Q 0,0 18,0 Q 0,0 0,18 Q 0,0 -18,0 Q 0,0 0,-18 Z" fill="#FFFFFF"/>
+      </g>
+
+      <!-- 3. ESTRELA MAGENTA NEON (Próxima à Ponta da Lâmina Inferior) -->
+      <g transform="translate(825, 715) scale(0.95)" filter="url(#glow-pink-master)">
+        <circle cx="0" cy="0" r="26" fill="url(#pink-star)" opacity="0.3"/>
+        <path d="M 0,-38 Q 0,0 38,0 Q 0,0 0,38 Q 0,0 -38,0 Q 0,0 0,-38 Z" fill="url(#pink-star)"/>
+        <path d="M 0,-16 Q 0,0 16,0 Q 0,0 0,16 Q 0,0 -16,0 Q 0,0 0,-16 Z" fill="#FFFFFF"/>
+      </g>
+
+      <!-- 4. ESTRELA CIANO MÉDIA (Esquerda Superior) -->
+      <g transform="translate(200, 220) scale(0.8)" filter="url(#glow-cyan-master)">
+        <path d="M 0,-34 Q 0,0 34,0 Q 0,0 0,34 Q 0,0 -34,0 Q 0,0 0,-34 Z" fill="url(#cyan-star)"/>
+        <path d="M 0,-14 Q 0,0 14,0 Q 0,0 0,14 Q 0,0 -14,0 Q 0,0 0,-14 Z" fill="#FFFFFF"/>
+      </g>
+
+      <!-- 5. ESTRELA DOURADA SUTIL (Esquerda Inferior) -->
+      <g transform="translate(200, 800) scale(0.7)" filter="url(#glow-gold-master)">
+        <path d="M 0,-30 Q 0,0 30,0 Q 0,0 0,30 Q 0,0 -30,0 Q 0,0 0,-30 Z" fill="url(#gold-star)"/>
+        <path d="M 0,-12 Q 0,0 12,0 Q 0,0 0,12 Q 0,0 -12,0 Q 0,0 0,-12 Z" fill="#FFFFFF"/>
+      </g>
+
+      <!-- Partículas de Energia / Fagulhas de Renderização de Vídeo -->
+      <g opacity="0.9">
+        <circle cx="675" cy="460" r="4.5" fill="#FEF08A"/>
+        <circle cx="705" cy="540" r="4" fill="#A5F3FC"/>
+        <circle cx="585" cy="480" r="3.5" fill="#FBCFE8"/>
+        <circle cx="740" cy="495" r="4.5" fill="#FEF08A"/>
+        <circle cx="545" cy="550" r="3" fill="#A5F3FC"/>
+        <circle cx="430" cy="360" r="3.5" fill="#E0E7FF"/>
+        <circle cx="430" cy="670" r="3.5" fill="#FBCFE8"/>
+      </g>
+    </g>
+
+    <!-- Camada de Reflexo de Vidro Curvo (Apple Liquid Glass) -->
+    <path d="M 72,72 L 952,72 C 952,72 870,300 512,300 C 154,300 72,72 72,72 Z"
+          fill="url(#border-squircle)" opacity="0.045"/>
+  </g>
+
+  <!-- BORDA SQUIRCLE COM LEVE BRILHO NEON (Glow Sutil & Contorno Nítido) -->
+  <rect x="72" y="72" width="880" height="880" rx="200" ry="200"
+        fill="none" stroke="url(#border-squircle)" stroke-width="4.5"/>
+  
+  <!-- Highlight de Borda no Canto Superior Esquerdo -->
+  <path d="M 272,72 L 512,72" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  <path d="M 72,272 L 72,512" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+</svg>
