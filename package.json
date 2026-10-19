@@ -1,0 +1,11 @@
+{
+  "name": "clipr",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm --prefix ui run dev",
+    "build": "npm --prefix ui run build",
+    "check": "npm --prefix ui run check"
+  }
+}

@@ -1,0 +1,38 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/clipr-domain",
+    "crates/clipr-persistence",
+    "crates/clipr-media",
+    "crates/clipr-ai",
+    "crates/clipr-youtube",
+    "src-tauri",
+]
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.43", features = ["full"] }
+thiserror = "2.0"
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rusqlite = { version = "0.33", features = ["bundled", "chrono", "serde_json"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream", "multipart"] }
+regex = "1.11"
+tempfile = "3.17"
+url = { version = "2.5", features = ["serde"] }
+futures-util = "0.3"
+bytes = "1.0"
+sha2 = "0.10"
+
+hex = "0.4"
+dirs = "6.0"
+
+
+clipr-domain = { path = "crates/clipr-domain" }
+clipr-persistence = { path = "crates/clipr-persistence" }
+clipr-media = { path = "crates/clipr-media" }
+clipr-ai = { path = "crates/clipr-ai" }
+clipr-youtube = { path = "crates/clipr-youtube" }
