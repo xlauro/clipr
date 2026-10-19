@@ -93,13 +93,37 @@ pub async fn start_pipeline(
     let pipe = pipeline.inner().clone();
 
     tokio::spawn(async move {
-        for video in videos {
-            if video.status == clipr_domain::ProcessingStatus::Pending {
-                if let Err(e) = pipe.process_video(video, settings.clone()).await {
-                    tracing::error!("Erro ao processar vídeo: {e}");
-                }
+        if videos.is_empty() {
+            pipe.log("[PIPELINE] A fila está vazia. Adicione ao menos um link do YouTube antes de iniciar.", false);
+            pipe.progress("IDLE", 1.0, "Fila vazia.");
+            return;
+        }
+
+        let pending_videos: Vec<_> = videos
+            .into_iter()
+            .filter(|v| v.status == clipr_domain::ProcessingStatus::Pending || v.status == clipr_domain::ProcessingStatus::Failed)
+            .collect();
+
+        if pending_videos.is_empty() {
+            pipe.log("[PIPELINE] Nenhum vídeo pendente encontrado na fila para processar.", false);
+            pipe.progress("IDLE", 1.0, "Todos os vídeos da fila já foram processados.");
+            return;
+        }
+
+        let total = pending_videos.len();
+        pipe.log(format!("[PIPELINE] Iniciando processamento de {total} vídeo(s) na fila..."), false);
+
+        for (idx, video) in pending_videos.into_iter().enumerate() {
+            let vid_url = video.url.clone();
+            pipe.log(format!("[PIPELINE] Processando vídeo {} de {total}: {vid_url}", idx + 1), false);
+            if let Err(e) = pipe.process_video(video, settings.clone()).await {
+                pipe.log(format!("[PIPELINE][ERRO] Falha ao processar {vid_url}: {e}"), false);
+                tracing::error!("Erro ao processar vídeo: {e}");
             }
         }
+
+        pipe.log("[PIPELINE] Processamento da fila concluído.", false);
+        pipe.progress("COMPLETED", 1.0, "Processamento da fila finalizado.");
     });
 
     Ok(true)
@@ -307,4 +331,12 @@ pub async fn youtube_publish_clip(
 pub async fn select_directory() -> Result<Option<String>, String> {
     let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
     Ok(Some(format!("{home}/ClipprExports")))
+}
+
+#[tauri::command]
+pub async fn prepare_video_source(
+    video_id: i64,
+    pipeline: State<'_, Arc<ClipprPipeline>>,
+) -> Result<String, String> {
+    pipeline.prepare_video_for_preview(video_id).await.map_err(|e| e.to_string())
 }

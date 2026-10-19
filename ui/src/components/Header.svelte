@@ -15,8 +15,8 @@
 <header class="bg-zinc-900/90 border-b border-zinc-800/80 px-4 py-2.5 flex items-center justify-between shrink-0 select-none">
   <!-- Brand Title -->
   <div class="flex items-center space-x-3">
-    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
-      <Scissors class="w-4 h-4" />
+    <div class="w-8 h-8 rounded-lg overflow-hidden shadow-lg shadow-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+      <img src="/clippr-icon.svg" alt="Clippr" class="w-full h-full object-cover" />
     </div>
     <div>
       <div class="flex items-center space-x-2">

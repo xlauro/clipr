@@ -40,17 +40,17 @@
           ? 'w-36 h-60'
           : 'w-64 h-36'}"
       >
-        {#if appState.thumbnailPreview}
-          <div class="w-full h-full flex flex-col justify-between p-2 relative bg-zinc-900 text-center">
-            <span class="text-[9px] bg-indigo-600/80 text-white font-bold px-1.5 py-0.5 rounded self-start">
+        {#if appState.activeThumbnailSrc}
+          <div class="w-full h-full relative group flex items-center justify-center bg-black">
+            <img
+              src={appState.activeThumbnailSrc}
+              alt="Capa do corte"
+              class="w-full h-full object-cover"
+            />
+            <span class="absolute top-2 left-2 text-[9px] bg-black/80 backdrop-blur-sm text-indigo-300 font-bold px-1.5 py-0.5 rounded shadow">
               {appState.thumbnailAspectRatio}
             </span>
-            <div class="my-auto px-1">
-              <span class="text-xs font-black uppercase text-amber-300 tracking-tight leading-none drop-shadow-md">
-                {appState.thumbnailHeadline || 'HEADLINE'}
-              </span>
-            </div>
-            <span class="text-[9px] text-zinc-400 self-end">
+            <span class="absolute bottom-2 right-2 text-[9px] bg-black/80 backdrop-blur-sm text-amber-300 font-mono font-bold px-1.5 py-0.5 rounded shadow">
               {appState.thumbnailTimestamp.toFixed(1)}s
             </span>
           </div>

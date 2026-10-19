@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 /// Utilizado para legendagem dinâmica de alta retenção (karaokê estilo Hormozi/Shorts/Reels)
 /// e alinhamento semântico com dicionários visuais (ex: emojis virais).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WordTimestamp {
     pub word: String,
     pub start_seconds: f64,

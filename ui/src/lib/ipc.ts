@@ -1,5 +1,18 @@
-import { invoke, isTauri } from '@tauri-apps/api/core';
+import { invoke, isTauri, convertFileSrc } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+
+export function getAssetUrl(filePath: string | null | undefined): string | null {
+  if (!filePath) return null;
+  if (!isTauri()) {
+    return filePath;
+  }
+  try {
+    return convertFileSrc(filePath);
+  } catch (e) {
+    console.warn('[IPC] Falha ao converter caminho para URL via assetProtocol:', e);
+    return filePath;
+  }
+}
 import type {
   AppSettings,
   ClipCandidate,
@@ -82,12 +95,12 @@ let mockClips: ClipCandidate[] = [
     thumbnailTimestamp: 22.5,
     thumbnailHeadline: 'PARE DE ERRAR NISSO!',
     scores: {
-      hookStrength: 96,
-      emotionalArousal: 92,
-      storyCohesion: 90,
-      retentionPotential: 95,
-      standaloneClarity: 94,
-      topicNovelty: 91,
+      hook: 96,
+      retention: 95,
+      emotional: 92,
+      storytelling: 90,
+      standalone: 94,
+      visual: 91,
     },
   },
   {
@@ -111,12 +124,12 @@ let mockClips: ClipCandidate[] = [
     thumbnailTimestamp: 80.0,
     thumbnailHeadline: 'O GRANDE SEGREDO',
     scores: {
-      hookStrength: 89,
-      emotionalArousal: 88,
-      storyCohesion: 87,
-      retentionPotential: 86,
-      standaloneClarity: 90,
-      topicNovelty: 88,
+      hook: 89,
+      retention: 86,
+      emotional: 88,
+      storytelling: 87,
+      standalone: 90,
+      visual: 88,
     },
   },
 ];
@@ -137,17 +150,31 @@ const mockWordsMap: Record<number, WordTimestamp[]> = {
   ],
 };
 
-async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>, fallback?: T): Promise<T> {
-  if (isTauri()) {
-    try {
-      return await invoke<T>(cmd, args);
-    } catch (err) {
-      console.warn(`[Tauri IPC] Failed '${cmd}', returning fallback:`, err);
-      if (fallback !== undefined) return fallback;
-      throw err;
+async function safeInvoke<T>(
+  cmd: string,
+  args?: Record<string, unknown>,
+  fallback?: T
+): Promise<T> {
+  if (!isTauri()) {
+    if (fallback !== undefined) {
+      return fallback;
     }
+
+    throw new Error(
+      `Comando '${cmd}' indisponível fora do Tauri`
+    );
   }
-  return fallback as T;
+
+  try {
+    return await invoke<T>(cmd, args);
+  } catch (error) {
+    console.error(
+      `[Tauri IPC] Falha ao executar '${cmd}':`,
+      error
+    );
+
+    throw error;
+  }
 }
 
 export const api = {
@@ -205,7 +232,10 @@ export const api = {
     autoProcessAboveThreshold: boolean;
     orientation: string;
   }): Promise<boolean> {
-    return safeInvoke<boolean>('start_pipeline', { options }, true);
+    return safeInvoke<boolean>(
+      'start_pipeline',
+      { options }
+    );
   },
 
   async getClips(): Promise<ClipCandidate[]> {
@@ -340,6 +370,14 @@ export const api = {
 
   async selectDirectory(): Promise<string | null> {
     return safeInvoke<string | null>('select_directory', undefined, '/home/user/ClipprExports');
+  },
+
+  async prepareVideoSource(videoId: number): Promise<string> {
+    return safeInvoke<string>('prepare_video_source', { videoId }, '');
+  },
+
+  convertAssetPath(filePath: string | null | undefined): string | null {
+    return getAssetUrl(filePath);
   },
 };
 

@@ -1,4 +1,4 @@
-import { api, listenToClipprEvents } from '../ipc';
+import { api, listenToClipprEvents, getAssetUrl } from '../ipc';
 import type {
   AppSettings,
   ClipCandidate,
@@ -45,6 +45,7 @@ class AppState {
   thumbnailAspectRatio = $state<'16:9' | '9:16'>('9:16');
   thumbnailPreview = $state<string | null>(null);
   rawFramePreview = $state<string | null>(null);
+  thumbVersion = $state(0);
 
   // Player State
   currentTime = $state(0);
@@ -109,6 +110,32 @@ class AppState {
   // Derived state
   selectedClip = $derived<ClipCandidate | null>(
     this.clips.find((c) => c.id === this.selectedClipId) || (this.clips.length > 0 ? this.clips[0] : null)
+  );
+
+  activeParentVideo = $derived<VideoSource | null>(
+    this.selectedClip
+      ? this.videos.find((v) => v.id === this.selectedClip?.videoSourceId) || null
+      : null
+  );
+
+  activeVideoPath = $derived<string | null>(
+    this.selectedClip?.outputFilePath || this.activeParentVideo?.localVideoPath || null
+  );
+
+  activeVideoSrc = $derived<string | null>(
+    getAssetUrl(this.activeVideoPath)
+  );
+
+  isVideoRendered = $derived<boolean>(
+    !!this.selectedClip?.outputFilePath
+  );
+
+  activeThumbnailSrc = $derived<string | null>(
+    this.thumbnailPreview ? `${getAssetUrl(this.thumbnailPreview)}?v=${this.thumbVersion}` : null
+  );
+
+  activeRawFrameSrc = $derived<string | null>(
+    this.rawFramePreview ? `${getAssetUrl(this.rawFramePreview)}?v=${this.thumbVersion}` : null
   );
 
   filteredClips = $derived.by(() => {
@@ -192,12 +219,22 @@ class AppState {
   }
 
   async init() {
-    this.addLog('INFO', 'Clippr inicializado com sucesso (Svelte 5 Runes + Tauri v2).');
-    await this.refreshDiagnostics();
-    await this.loadSettings();
-    await this.loadVideos();
-    await this.loadClips();
-    this.setupEventListeners();
+    this.addLog('INFO', 'Clippr inicializado com sucesso.');
+    if (!api.isTauriRuntime()) {
+      this.addLog(
+        'WARN',
+        'Ambiente navegador detectado. Para processamento real com FFmpeg e IA, execute: npm run tauri:dev'
+      );
+    }
+
+    await this.setupEventListeners();
+
+    await Promise.allSettled([
+      this.refreshDiagnostics(),
+      this.loadSettings(),
+      this.loadVideos(),
+      this.loadClips(),
+    ]);
   }
 
   async setupEventListeners() {
@@ -206,7 +243,20 @@ class AppState {
         onProgress: (p) => {
           this.statusLabel = p.message || p.stage;
           this.progressPercent = p.progress <= 1 ? Math.round(p.progress * 100) : Math.round(p.progress);
-          this.isProcessing = this.progressPercent > 0 && this.progressPercent < 100;
+          if (
+            p.stage === 'WAITING_APPROVAL' ||
+            p.stage === 'COMPLETED' ||
+            p.stage === 'FAILED' ||
+            p.stage === 'IDLE'
+          ) {
+            this.isProcessing = false;
+          } else {
+            this.isProcessing = this.progressPercent > 0 && this.progressPercent < 100;
+          }
+          if (p.stage === 'WAITING_APPROVAL' || p.stage === 'COMPLETED') {
+            this.loadClips();
+            this.loadVideos();
+          }
         },
         onLog: (l) => {
           this.addLog(l.level, l.message, l.isDebug);
@@ -236,8 +286,24 @@ class AppState {
           this.diagnostics = diag;
         },
       });
-    } catch (e) {
-      console.warn('Events registration failed (browser mode):', e);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : String(error);
+
+      this.addLog(
+        'ERROR',
+        `[EVENTOS] Falha ao inicializar listeners: ${message}`
+      );
+
+      this.addToast(
+        'error',
+        'Falha na comunicação com o backend',
+        message
+      );
+
+      console.error('[TAURI EVENTS]', error);
     }
   }
 
@@ -355,6 +421,16 @@ class AppState {
     this.progressPercent = 5;
     this.addLog('INFO', 'Iniciando pipeline para vídeos na fila...');
 
+    if (!api.isTauriRuntime()) {
+      this.addToast(
+        'info',
+        'Simulação no Navegador',
+        'Demonstração iniciada. Para processamento real com GPU e FFmpeg, execute: npm run tauri:dev'
+      );
+      this.simulateBrowserPipeline();
+      return;
+    }
+
     try {
       await api.startPipeline({
         burnSubtitles: this.queueOptions.burnSubtitles,
@@ -362,10 +438,50 @@ class AppState {
         orientation: this.queueOptions.defaultOrientation,
       });
       this.addToast('info', 'Processamento Iniciado', 'Download e análise IA em andamento.');
-    } catch (e) {
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : String(error);
+
       this.isProcessing = false;
-      this.addToast('error', 'Erro', 'Falha ao iniciar processamento.');
+      this.statusLabel = 'Falha ao iniciar processamento';
+      this.progressPercent = 0;
+
+      this.addLog(
+        'ERROR',
+        `[PIPELINE] Falha ao iniciar: ${message}`
+      );
+
+      this.addToast(
+        'error',
+        'Erro no processamento',
+        message
+      );
     }
+  }
+
+  private simulateBrowserPipeline() {
+    setTimeout(() => {
+      this.statusLabel = 'Baixando metadados e transcrição...';
+      this.progressPercent = 25;
+      this.addLog('INFO', '[YTDLP] (Simulação) Metadados e transcrição extraídos com sucesso.');
+    }, 1000);
+
+    setTimeout(() => {
+      this.statusLabel = 'Analisando momentos virais com IA...';
+      this.progressPercent = 65;
+      this.addLog('INFO', '[AI] (Simulação) Momentos virais identificados com sucesso.');
+    }, 2500);
+
+    setTimeout(() => {
+      this.statusLabel = 'Cortes prontos aguardando aprovação na aba Cortes.';
+      this.progressPercent = 100;
+      this.isProcessing = false;
+      this.addLog('INFO', '[PIPELINE] (Simulação) Pipeline concluído. Verifique a aba Cortes.');
+      this.addToast('success', 'Simulação Concluída', 'Cortes disponíveis na aba Cortes. Para processar vídeos reais, use: npm run tauri:dev');
+      this.loadClips();
+    }, 4000);
   }
 
   async loadClips() {
@@ -482,7 +598,7 @@ class AppState {
     const clip = this.selectedClip;
     if (!clip) return;
     this.statusLabel = 'Gerando thumbnail magnética com FFmpeg...';
-    this.addLog('INFO', `Gerando capa para corte #${clip.id} em ${this.thumbnailTimestamp.toFixed(2)}s`);
+    this.addLog('INFO', `Gerando capa para corte #${clip.id} em ${this.thumbnailTimestamp.toFixed(2)}s | Headline: "${this.thumbnailHeadline}"`);
     try {
       const res = await api.generateThumbnail(
         clip.id,
@@ -492,12 +608,35 @@ class AppState {
       );
       this.thumbnailPreview = res.thumbnailPath;
       this.rawFramePreview = res.rawFramePath;
+      this.thumbVersion += 1;
       clip.thumbnailPath = res.thumbnailPath;
       clip.rawFramePath = res.rawFramePath;
       this.statusLabel = 'Capa gerada com sucesso!';
       this.addToast('success', 'Capa Gerada', 'Thumbnail de alto CTR criada e salva.');
+      this.addLog('INFO', `[THUMBNAIL] Capa salva: ${res.thumbnailPath}`);
     } catch (e) {
-      this.addToast('error', 'Erro', 'Falha ao gerar capa.');
+      const msg = e instanceof Error ? e.message : String(e);
+      this.addLog('ERROR', `[THUMBNAIL] Falha ao gerar capa: ${msg}`);
+      this.addToast('error', 'Erro ao Gerar Capa', msg);
+    }
+  }
+
+  async prepareVideoForPreview() {
+    const clip = this.selectedClip;
+    if (!clip) return;
+    this.statusLabel = 'Baixando vídeo original para preview...';
+    this.addToast('info', 'Download do Vídeo', 'Baixando vídeo original via yt-dlp para habilitar o player...');
+    this.addLog('INFO', `Preparando vídeo original ID #${clip.videoSourceId} para preview do corte #${clip.id}`);
+    try {
+      await api.prepareVideoSource(clip.videoSourceId);
+      await this.loadVideos();
+      this.statusLabel = 'Vídeo pronto para reprodução!';
+      this.addToast('success', 'Vídeo Pronto', 'Vídeo baixado com sucesso!');
+      this.addLog('INFO', `Vídeo original pronto para reprodução no player.`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      this.addLog('ERROR', `Falha ao baixar vídeo para preview: ${msg}`);
+      this.addToast('error', 'Falha no Download', msg);
     }
   }
 

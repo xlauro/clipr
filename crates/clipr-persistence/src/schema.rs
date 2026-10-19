@@ -62,7 +62,7 @@ pub fn initialize_schema(conn: &Connection) -> Result<(), PersistenceError> {
             burn_subtitles INTEGER NOT NULL DEFAULT 1,
             cpu_threads INTEGER NOT NULL DEFAULT 0,
             gemini_api_key TEXT NOT NULL DEFAULT '',
-            gemini_model TEXT NOT NULL DEFAULT 'gemini-3.8-flash',
+            gemini_model TEXT NOT NULL DEFAULT 'gemini-2.5-flash',
             ai_provider TEXT NOT NULL DEFAULT 'GEMINI',
             openai_api_key TEXT NOT NULL DEFAULT '',
             openai_model TEXT NOT NULL DEFAULT 'gpt-4o-mini',

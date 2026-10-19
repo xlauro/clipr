@@ -3,6 +3,7 @@ use crate::scores::ScoreBreakdown;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ClipCandidate {
     pub id: Option<i64>,
     pub video_source_id: Option<i64>,

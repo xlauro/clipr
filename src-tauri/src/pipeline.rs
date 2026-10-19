@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use tokio::sync::{broadcast, Mutex, Semaphore};
@@ -251,7 +251,24 @@ impl ClipprPipeline {
         Ok(saved)
     }
 
-    pub async fn process_video(&self, mut video: VideoSource, settings: AppSettings) -> anyhow::Result<()> {
+    pub async fn process_video(&self, video: VideoSource, settings: AppSettings) -> anyhow::Result<()> {
+        let video_id = video.id.unwrap_or(0);
+        match self.process_video_inner(video.clone(), settings).await {
+            Ok(()) => Ok(()),
+            Err(e) => {
+                let err_msg = e.to_string();
+                self.log(format!("[PIPELINE][ERRO] Falha no processamento do vídeo ID {video_id}: {err_msg}"), false);
+                let _ = self.db.update_video_status(video_id, ProcessingStatus::Failed, Some(&err_msg));
+                let failed_video = video.with_status(ProcessingStatus::Failed, Some(err_msg.clone()));
+                EventBus::global().publish_video_source(failed_video);
+                EventBus::global().publish_error("PIPELINE", err_msg.clone());
+                self.progress("FAILED", 0.0, format!("Erro no vídeo {video_id}: {err_msg}"));
+                Err(e)
+            }
+        }
+    }
+
+    async fn process_video_inner(&self, mut video: VideoSource, settings: AppSettings) -> anyhow::Result<()> {
         let video_id = video.id.unwrap_or(0);
         self.log(
             format!(
@@ -468,9 +485,67 @@ impl ClipprPipeline {
                 "[PIPELINE] Modo manual ativo: cortes prontos aguardando aprovação do usuário na aba de Cortes.",
                 false,
             );
+            self.progress("WAITING_APPROVAL", 1.0, format!("{} corte(s) detectado(s)! Vá para a aba Cortes para aprovar e renderizar.", saved_clips.len()));
         }
 
         Ok(())
+    }
+
+    pub async fn ensure_local_video(&self, video: &mut VideoSource) -> anyhow::Result<PathBuf> {
+        let video_id = video.id.unwrap_or(0);
+        // 1. Verifica se já está configurado em local_video_path e se o arquivo existe e tem tamanho válido (> 1MB)
+        if let Some(ref p) = video.local_video_path {
+            let path = PathBuf::from(p);
+            if path.exists() {
+                if let Ok(meta) = std::fs::metadata(&path) {
+                    if meta.len() > 1024 * 1024 {
+                        self.log(format!("[PIPELINE] Usando vídeo original em cache: {}", path.display()), false);
+                        return Ok(path);
+                    }
+                }
+            }
+        }
+
+        // 2. Verifica se o vídeo já existe no diretório canônico ~/.clippr/cache/videos
+        let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+        let cache_dir = home.join(".clippr").join("cache").join("videos");
+        tokio::fs::create_dir_all(&cache_dir).await?;
+        let target = cache_dir.join(format!("{}.mp4", video.video_id));
+
+        if target.exists() {
+            if let Ok(meta) = std::fs::metadata(&target) {
+                if meta.len() > 1024 * 1024 {
+                    self.log(format!("[PIPELINE] Vídeo original encontrado em cache canônico: {}", target.display()), false);
+                    let target_str = target.to_string_lossy().to_string();
+                    video.local_video_path = Some(target_str);
+                    self.db.save_video(video)?;
+                    EventBus::global().publish_video_source(video.clone());
+                    return Ok(target);
+                }
+            }
+        }
+
+        // 3. Download via yt-dlp
+        self.log(format!("[PIPELINE] Baixando vídeo original '{}' via yt-dlp para {}", video.title, target.display()), false);
+        self.progress("DOWNLOADING", 0.6, format!("Baixando vídeo {}...", video.video_id));
+
+        let downloaded = self.yt_dlp.download_full_video(&video.url, &target, None::<fn(f64)>).await?;
+        let downloaded_str = downloaded.to_string_lossy().to_string();
+        self.log(format!("[PIPELINE] Download do vídeo original concluído com sucesso: {downloaded_str}"), false);
+
+        video.local_video_path = Some(downloaded_str);
+        self.db.save_video(video)?;
+        self.log(format!("[DB] Caminho canônico do vídeo em cache salvo no banco para vídeo ID {video_id}"), false);
+        EventBus::global().publish_video_source(video.clone());
+
+        Ok(downloaded)
+    }
+
+    pub async fn prepare_video_for_preview(&self, video_id: i64) -> anyhow::Result<String> {
+        let mut video = self.db.find_video_by_id(video_id)?
+            .ok_or_else(|| anyhow::anyhow!("Vídeo ID {video_id} não encontrado"))?;
+        let path = self.ensure_local_video(&mut video).await?;
+        Ok(path.to_string_lossy().to_string())
     }
 
     pub async fn render_clips_for_video(
@@ -484,31 +559,8 @@ impl ClipprPipeline {
         self.log("[PIPELINE] Semáforo de renderização adquirido com sucesso.", false);
         let video_id = video.id.unwrap_or(0);
 
-        // 1. Download do vídeo se não existir
-        let video_file = match video.local_video_path.as_ref() {
-            Some(path) if Path::new(path).exists() => {
-                self.log(format!("[PIPELINE] Vídeo original já existe em cache local: {path}"), false);
-                PathBuf::from(path)
-            }
-            _ => {
-                self.log("[PIPELINE] Vídeo original não encontrado em cache local. Necessário download via yt-dlp.".to_string(), false);
-                self.db.update_video_status(video_id, ProcessingStatus::DownloadingVideo, None)?;
-                self.log(format!("[DB] Status do vídeo ID {video_id} atualizado para DownloadingVideo"), false);
-                video = video.with_status(ProcessingStatus::DownloadingVideo, None);
-                EventBus::global().publish_video_source(video.clone());
-                self.progress("DOWNLOADING", 0.7, "Baixando vídeo com yt-dlp...");
-
-                let videos_dir = PathBuf::from("temp").join("videos");
-                tokio::fs::create_dir_all(&videos_dir).await?;
-                let target = videos_dir.join(format!("{}.mp4", video.video_id));
-                let downloaded = self.yt_dlp.download_full_video(&video.url, &target, None::<fn(f64)>).await?;
-                self.log(format!("[PIPELINE] Download do vídeo original concluído: {}", downloaded.display()), false);
-                video.local_video_path = Some(downloaded.to_string_lossy().to_string());
-                self.db.save_video(&video)?;
-                self.log(format!("[DB] Caminho do vídeo em cache salvo no banco para vídeo ID {video_id}"), false);
-                downloaded
-            }
-        };
+        // 1. Download/validação do vídeo original em cache canônico
+        let video_file = self.ensure_local_video(&mut video).await?;
 
         // 2. Renderização dos cortes com FFmpeg
         self.db.update_video_status(video_id, ProcessingStatus::CuttingFfmpeg, None)?;
@@ -703,21 +755,8 @@ impl ClipprPipeline {
         self.log(format!("[DB] Vídeo pai ID {video_id} recuperado ('{}')", video.title), false);
         let settings = self.db.get_settings().unwrap_or_default();
 
-        let video_file = match video.local_video_path.as_ref() {
-            Some(p) if Path::new(p).exists() => {
-                self.log(format!("[PIPELINE] Usando vídeo original em cache: {p}"), false);
-                PathBuf::from(p)
-            }
-            _ => {
-                self.log("[PIPELINE] Vídeo original não encontrado em cache para thumbnail. Baixando via yt-dlp...".to_string(), false);
-                let videos_dir = PathBuf::from("temp").join("videos");
-                tokio::fs::create_dir_all(&videos_dir).await?;
-                let target = videos_dir.join(format!("{}.mp4", video.video_id));
-                let downloaded = self.yt_dlp.download_full_video(&video.url, &target, None::<fn(f64)>).await?;
-                self.log(format!("[PIPELINE] Download do vídeo concluído: {}", downloaded.display()), false);
-                downloaded
-            }
-        };
+        let mut video = video;
+        let video_file = self.ensure_local_video(&mut video).await?;
 
         let root_dir = PathBuf::from(&settings.output_directory);
         let layout = VideoExportLayout::new(&root_dir, &video.video_id, &video.title);
@@ -762,16 +801,8 @@ impl ClipprPipeline {
             false,
         );
 
-        let video_file = match video.local_video_path.as_ref() {
-            Some(p) if Path::new(p).exists() => PathBuf::from(p),
-            _ => {
-                self.log("[PIPELINE] Vídeo original não encontrado em cache para Whisper. Baixando via yt-dlp...".to_string(), false);
-                let videos_dir = PathBuf::from("temp").join("videos");
-                tokio::fs::create_dir_all(&videos_dir).await?;
-                let target = videos_dir.join(format!("{}.mp4", video.video_id));
-                self.yt_dlp.download_full_video(&video.url, &target, None::<fn(f64)>).await?
-            }
-        };
+        let mut video = video;
+        let video_file = self.ensure_local_video(&mut video).await?;
 
         let segments = match video.transcript_path.as_ref() {
             Some(p) => {

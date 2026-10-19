@@ -67,7 +67,7 @@ impl DatabaseManager {
     pub fn save_video(&self, source: &VideoSource) -> Result<VideoSource, PersistenceError> {
         let conn = self.lock_conn()?;
         let created_at_str = source.created_at.to_rfc3339();
-        let status_str = source.status.to_string();
+        let status_str = source.status.as_db_str();
 
         if let Some(id) = source.id {
             conn.execute(
@@ -210,7 +210,7 @@ impl DatabaseManager {
         error_message: Option<&str>,
     ) -> Result<(), PersistenceError> {
         let conn = self.lock_conn()?;
-        let status_str = status.to_string();
+        let status_str = status.as_db_str();
         conn.execute(
             "UPDATE videos SET status = ?1, error_message = ?2 WHERE id = ?3",
             params![status_str, error_message, video_id],

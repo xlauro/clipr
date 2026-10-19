@@ -6,6 +6,7 @@ use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AppSettings {
     pub output_directory: String,
     pub min_virality_score: i32,
@@ -73,7 +74,7 @@ impl AppSettings {
             gemini_api_key: gemini_api_key.unwrap_or_default(),
             gemini_model: gemini_model
                 .filter(|s| !s.trim().is_empty())
-                .unwrap_or_else(|| "gemini-3.8-flash".to_string()),
+                .unwrap_or_else(|| "gemini-2.5-flash".to_string()),
             ai_provider: ai_provider.unwrap_or(AiProvider::Gemini),
             openai_api_key: openai_api_key.unwrap_or_default(),
             openai_model: openai_model
@@ -107,7 +108,7 @@ impl AppSettings {
             burn_subtitles: true,
             cpu_threads: 0,
             gemini_api_key: api_key,
-            gemini_model: "gemini-3.8-flash".to_string(),
+            gemini_model: "gemini-2.5-flash".to_string(),
             ai_provider: AiProvider::Gemini,
             openai_api_key: openai_key,
             openai_model: "gpt-4o-mini".to_string(),

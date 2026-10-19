@@ -768,6 +768,21 @@ impl GeminiClient {
                         EventBus::global().publish_log(&err_msg, false);
                         error!("{err_msg}");
                         return Err(GeminiApiError::new(403, err_msg, Some(resp_body)).into());
+                    } else if status == 404 {
+                        if m_idx + 1 < models.len() {
+                            let next_model = models[m_idx + 1];
+                            let switch_msg = format!(
+                                "[AI-GEMINI] Modelo '{current_model}' retornou 404 (Não Encontrado). Alternando para modelo de fallback '{next_model}'..."
+                            );
+                            EventBus::global().publish_log(&switch_msg, false);
+                            warn!("{}", switch_msg);
+                            break;
+                        } else {
+                            let fatal = format!("[AI-GEMINI] Erro na API Gemini (HTTP 404 - Modelo '{current_model}' não encontrado): {resp_body}");
+                            EventBus::global().publish_log(&fatal, false);
+                            error!("{fatal}");
+                            return Err(GeminiApiError::new(status, fatal, Some(resp_body)).into());
+                        }
                     } else {
                         let fatal = format!("[AI-GEMINI] Erro na API Gemini (HTTP {status}): {resp_body}");
                         EventBus::global().publish_log(&fatal, false);

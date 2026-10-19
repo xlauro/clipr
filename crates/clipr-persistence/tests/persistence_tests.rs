@@ -163,7 +163,7 @@ fn should_update_and_retrieve_app_settings() {
         burn_subtitles: true,
         cpu_threads: 8,
         gemini_api_key: "AIzaSyTestOperations-ApiKey-Initial-12345".to_string(),
-        gemini_model: "gemini-3.8-flash".to_string(),
+        gemini_model: "gemini-2.5-flash".to_string(),
         ai_provider: AiProvider::OpenAi,
         openai_api_key: "sk-openai-custom-key-1".to_string(),
         openai_model: "gpt-4o-mini".to_string(),

@@ -151,6 +151,57 @@ impl YtDlpManager {
         target_path.to_path_buf()
     }
 
+    pub fn resolve_js_runtime() -> Option<String> {
+        // 1. Verifica no PATH
+        if let Ok(path_env) = std::env::var("PATH") {
+            for dir in std::env::split_paths(&path_env) {
+                let candidate = dir.join("node");
+                if candidate.is_file() {
+                    return Some(candidate.to_string_lossy().to_string());
+                }
+            }
+        }
+
+        // 2. Procura em diretórios NVM comuns
+        if let Some(home) = dirs::home_dir() {
+            let nvm_pattern = home.join(".nvm/versions/node");
+            if nvm_pattern.is_dir() {
+                if let Ok(entries) = std::fs::read_dir(&nvm_pattern) {
+                    for entry in entries.flatten() {
+                        let node = entry.path().join("bin/node");
+                        if node.is_file() {
+                            return Some(node.to_string_lossy().to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Verifica caminhos padrão do sistema
+        for p in &["/usr/bin/node", "/usr/local/bin/node", "/opt/homebrew/bin/node"] {
+            if Path::new(p).is_file() {
+                return Some((*p).to_string());
+            }
+        }
+
+        None
+    }
+
+    pub fn resolve_ffmpeg() -> Option<String> {
+        if let Ok(path_env) = std::env::var("PATH") {
+            for dir in std::env::split_paths(&path_env) {
+                let candidate = dir.join("ffmpeg");
+                if candidate.is_file() {
+                    return Some(candidate.to_string_lossy().to_string());
+                }
+            }
+        }
+        if Path::new("/usr/bin/ffmpeg").is_file() {
+            return Some("/usr/bin/ffmpeg".to_string());
+        }
+        None
+    }
+
     pub async fn fetch_metadata_and_transcript(&self, url: &str) -> Result<TranscriptResult, MediaError> {
         info!("[YTDLP] Extraindo metadados e transcrição do YouTube: {}", url);
         EventBus::global().publish_log(format!("[YTDLP] Extraindo transcrição e timestamps do vídeo: {url}"), false);
@@ -158,14 +209,17 @@ impl YtDlpManager {
         let temp_dir = PathBuf::from("temp").join("transcripts");
         let _ = fs::create_dir_all(&temp_dir);
 
-        let output = Command::new(&self.binary_path)
-            .arg("--dump-single-json")
+        let mut cmd = Command::new(&self.binary_path);
+        if let Some(ref js_runtime) = Self::resolve_js_runtime() {
+            cmd.arg("--js-runtimes").arg(format!("node:{js_runtime}"));
+        }
+        cmd.arg("--dump-single-json")
             .arg("--no-playlist")
             .arg(url)
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .output()
-            .await?;
+            .stderr(Stdio::piped());
+
+        let output = cmd.output().await?;
 
         if !output.status.success() {
             let stderr_str = String::from_utf8_lossy(&output.stderr).to_string();
@@ -435,8 +489,14 @@ impl YtDlpManager {
             fs::create_dir_all(parent)?;
         }
 
-        let mut child = Command::new(&self.binary_path)
-            .arg("-S")
+        let mut cmd = Command::new(&self.binary_path);
+        if let Some(ref js_runtime) = Self::resolve_js_runtime() {
+            cmd.arg("--js-runtimes").arg(format!("node:{js_runtime}"));
+        }
+        if let Some(ref ffmpeg) = Self::resolve_ffmpeg() {
+            cmd.arg("--ffmpeg-location").arg(ffmpeg);
+        }
+        cmd.arg("-S")
             .arg("vcodec:h264,res,acodec:m4a")
             .arg("-f")
             .arg("bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best")
@@ -445,13 +505,28 @@ impl YtDlpManager {
             .arg("--newline")
             .arg(url)
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()?;
+            .stderr(Stdio::piped());
+
+        let mut child = cmd.spawn()?;
 
         let mut cp25 = false;
         let mut cp50 = false;
         let mut cp75 = false;
         let mut cp100 = false;
+
+        let stderr = child.stderr.take();
+        let stderr_task = tokio::spawn(async move {
+            let mut err_lines = Vec::new();
+            if let Some(err) = stderr {
+                let mut reader = BufReader::new(err).lines();
+                while let Ok(Some(line)) = reader.next_line().await {
+                    EventBus::global().publish_log(format!("[YTDLP-ERR] {line}"), true);
+                    debug!("[YTDLP-ERR] {line}");
+                    err_lines.push(line);
+                }
+            }
+            err_lines.join("\n")
+        });
 
         let stdout = child.stdout.take();
         if let Some(out) = stdout {
@@ -498,8 +573,9 @@ impl YtDlpManager {
         }
 
         let status = child.wait().await?;
+        let stderr_output = stderr_task.await.unwrap_or_default();
         if !status.success() {
-            let err_msg = format!("[YTDLP] Erro ao baixar vídeo via yt-dlp (exit code: {})", status);
+            let err_msg = format!("[YTDLP] Erro ao baixar vídeo via yt-dlp (exit code: {}): {stderr_output}", status);
             error!("{err_msg}");
             EventBus::global().publish_log(&err_msg, false);
             return Err(MediaError::YtDlpExecution {

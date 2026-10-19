@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 /// - Standalone: 15%
 /// - Visual: 10%
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ScoreBreakdown {
     pub hook: i32,
     pub retention: i32,

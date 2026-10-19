@@ -60,6 +60,20 @@ impl ProcessingStatus {
             _ => false,
         }
     }
+
+    pub fn as_db_str(&self) -> &'static str {
+        match self {
+            Self::Pending => "PENDING",
+            Self::FetchingTranscript => "FETCHING_TRANSCRIPT",
+            Self::AnalyzingAi => "ANALYZING_AI",
+            Self::PendingApproval => "PENDING_APPROVAL",
+            Self::DownloadingVideo => "DOWNLOADING_VIDEO",
+            Self::CuttingFfmpeg => "CUTTING_FFMPEG",
+            Self::Completed => "COMPLETED",
+            Self::DiscardedLowScore => "DISCARDED_LOW_SCORE",
+            Self::Failed => "FAILED",
+        }
+    }
 }
 
 impl fmt::Display for ProcessingStatus {
@@ -72,16 +86,25 @@ impl FromStr for ProcessingStatus {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.trim().to_uppercase().as_str() {
-            "PENDING" => Ok(Self::Pending),
-            "FETCHING_TRANSCRIPT" => Ok(Self::FetchingTranscript),
-            "ANALYZING_AI" => Ok(Self::AnalyzingAi),
-            "PENDING_APPROVAL" => Ok(Self::PendingApproval),
-            "DOWNLOADING_VIDEO" => Ok(Self::DownloadingVideo),
-            "CUTTING_FFMPEG" => Ok(Self::CuttingFfmpeg),
-            "COMPLETED" => Ok(Self::Completed),
-            "DISCARDED_LOW_SCORE" => Ok(Self::DiscardedLowScore),
-            "FAILED" => Ok(Self::Failed),
+        let clean = s.trim().to_uppercase();
+        match clean.as_str() {
+            "PENDING" | "PENDENTE" => Ok(Self::Pending),
+            "FETCHING_TRANSCRIPT" | "FETCHINGTRANSCRIPT" | "BAIXANDO TRANSCRIÇÃO" | "BAIXANDO TRANSCRICAO" => {
+                Ok(Self::FetchingTranscript)
+            }
+            "ANALYZING_AI" | "ANALYZINGAI" | "ANALISANDO COM IA" => Ok(Self::AnalyzingAi),
+            "PENDING_APPROVAL" | "PENDINGAPPROVAL" | "AGUARDANDO APROVAÇÃO" | "AGUARDANDO APROVACAO" => {
+                Ok(Self::PendingApproval)
+            }
+            "DOWNLOADING_VIDEO" | "DOWNLOADINGVIDEO" | "BAIXANDO VÍDEO" | "BAIXANDO VIDEO" => {
+                Ok(Self::DownloadingVideo)
+            }
+            "CUTTING_FFMPEG" | "CUTTINGFFMPEG" | "RENDERIZANDO CORTES" => Ok(Self::CuttingFfmpeg),
+            "COMPLETED" | "CONCLUÍDO" | "CONCLUIDO" => Ok(Self::Completed),
+            "DISCARDED_LOW_SCORE" | "DISCARDEDLOWSCORE" | "DESCARTADO (NOTA < 90)" | "DESCARTADO" => {
+                Ok(Self::DiscardedLowScore)
+            }
+            "FAILED" | "FALHOU" => Ok(Self::Failed),
             other => Err(format!("Status de processamento desconhecido: {}", other)),
         }
     }

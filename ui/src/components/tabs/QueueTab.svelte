@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState } from '../../lib/stores/appState.svelte';
+  import { api } from '../../lib/ipc';
   import { ProcessingStatusLabels, type ProcessingStatus } from '../../types';
   import {
     Plus,
@@ -53,6 +54,15 @@
 </script>
 
 <div class="h-full flex flex-col p-4 space-y-4 overflow-hidden">
+  {#if !api.isTauriRuntime()}
+    <div class="bg-amber-950/40 border border-amber-600/30 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs text-amber-200 shadow-sm shrink-0">
+      <div class="flex items-center space-x-2">
+        <span class="text-base">⚡</span>
+        <span><strong>Modo Navegador (Preview)</strong>: Para processamento nativo completo com FFmpeg, Whisper e GPU acelerada, execute no terminal: <code class="bg-amber-900/40 px-1.5 py-0.5 rounded font-mono text-amber-100">npm run tauri:dev</code></span>
+      </div>
+    </div>
+  {/if}
+
   <!-- Top: Add YouTube Link -->
   <div class="flex items-center space-x-3 bg-zinc-900/70 p-3 rounded-xl border border-zinc-800/80 shadow-md">
     <div class="relative flex-1">

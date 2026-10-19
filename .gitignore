@@ -1,6 +1,9 @@
 /target
 /ui/node_modules
+/node_modules
+node_modules/
 /ui/dist
 /.idea
 /.deps/*.rpm
 temp/
+*.txt

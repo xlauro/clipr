@@ -124,18 +124,19 @@ export const EmotionTagDetails: Record<
 export type AiProvider = 'GEMINI' | 'OPENAI';
 
 export interface ScoreBreakdown {
-  hookStrength: number;
-  emotionalArousal: number;
-  storyCohesion: number;
-  retentionPotential: number;
-  standaloneClarity: number;
-  topicNovelty: number;
+  hook: number;
+  retention: number;
+  emotional: number;
+  storytelling: number;
+  standalone: number;
+  visual: number;
 }
 
 export interface WordTimestamp {
   word: string;
   startSeconds: number;
   endSeconds: number;
+  confidence?: number;
 }
 
 export interface VideoSource {

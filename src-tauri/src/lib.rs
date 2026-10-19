@@ -61,6 +61,7 @@ pub fn run() {
             commands::youtube_save_credentials,
             commands::youtube_publish_clip,
             commands::select_directory,
+            commands::prepare_video_source,
         ])
         .run(tauri::generate_context!())
         .expect("Erro ao executar aplicativo Tauri");

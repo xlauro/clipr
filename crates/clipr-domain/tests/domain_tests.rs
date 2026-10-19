@@ -480,7 +480,7 @@ fn should_manage_app_settings() {
     assert_eq!(settings.auto_vertical_max_duration_seconds, 60.0);
     assert!(settings.burn_subtitles);
     assert_eq!(settings.cpu_threads, 0);
-    assert_eq!(settings.gemini_model, "gemini-3.8-flash");
+    assert_eq!(settings.gemini_model, "gemini-2.5-flash");
     assert_eq!(settings.ai_provider, AiProvider::Gemini);
     assert_eq!(settings.openai_model, "gpt-4o-mini");
     assert!(!settings.is_youtube_connected());
@@ -535,4 +535,123 @@ fn create_sample_clip(start: f64, end: f64) -> ClipCandidate {
         None,
         None,
     )
+}
+
+#[test]
+fn should_serialize_and_deserialize_app_settings_with_camel_case() {
+    let settings = AppSettings::default_settings();
+    let json = serde_json::to_string(&settings).expect("falha ao serializar AppSettings");
+
+    assert!(json.contains("\"outputDirectory\":"));
+    assert!(json.contains("\"minViralityScore\":"));
+    assert!(json.contains("\"autoProcessAboveThreshold\":"));
+    assert!(json.contains("\"defaultOrientation\":"));
+    assert!(json.contains("\"autoVerticalMaxDurationSeconds\":"));
+    assert!(json.contains("\"burnSubtitles\":"));
+    assert!(json.contains("\"cpuThreads\":"));
+    assert!(json.contains("\"geminiApiKey\":"));
+    assert!(json.contains("\"geminiModel\":"));
+    assert!(json.contains("\"aiProvider\":"));
+    assert!(json.contains("\"openaiApiKey\":"));
+    assert!(json.contains("\"openaiModel\":"));
+    assert!(json.contains("\"youtubeClientId\":"));
+    assert!(json.contains("\"youtubeClientSecret\":"));
+    assert!(json.contains("\"youtubeAccessToken\":"));
+    assert!(json.contains("\"youtubeRefreshToken\":"));
+    assert!(json.contains("\"youtubeTokenExpiresAt\":"));
+    assert!(json.contains("\"youtubeChannelTitle\":"));
+    assert!(json.contains("\"youtubeChannelId\":"));
+    assert!(json.contains("\"youtubeChannelAvatarUrl\":"));
+
+    let deserialized: AppSettings =
+        serde_json::from_str(&json).expect("falha ao desserializar AppSettings");
+    assert_eq!(settings, deserialized);
+}
+
+#[test]
+fn should_serialize_and_deserialize_video_source_with_camel_case() {
+    let video = VideoSource::new(
+        Some(42),
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "dQw4w9WgXcQ",
+        "Rick Astley",
+        "RickAstleyVEVO",
+        213.0,
+        Some("/tmp/transcript.vtt".to_string()),
+        Some("/tmp/video.mp4".to_string()),
+        ProcessingStatus::Completed,
+        None,
+        chrono::Utc::now(),
+    );
+
+    let json = serde_json::to_string(&video).expect("falha ao serializar VideoSource");
+
+    assert!(json.contains("\"videoId\":"));
+    assert!(json.contains("\"durationSeconds\":"));
+    assert!(json.contains("\"transcriptPath\":"));
+    assert!(json.contains("\"localVideoPath\":"));
+    assert!(json.contains("\"errorMessage\":"));
+    assert!(json.contains("\"createdAt\":"));
+
+    let deserialized: VideoSource =
+        serde_json::from_str(&json).expect("falha ao desserializar VideoSource");
+    assert_eq!(video, deserialized);
+}
+
+#[test]
+fn should_serialize_and_deserialize_clip_candidate_with_camel_case() {
+    let clip = create_sample_clip(10.0, 45.0);
+    let json = serde_json::to_string(&clip).expect("falha ao serializar ClipCandidate");
+
+    assert!(json.contains("\"videoSourceId\":"));
+    assert!(json.contains("\"startSeconds\":"));
+    assert!(json.contains("\"endSeconds\":"));
+    assert!(json.contains("\"viralityScore\":"));
+    assert!(json.contains("\"suggestedCaption\":"));
+    assert!(json.contains("\"hasSubtitles\":"));
+    assert!(json.contains("\"hasEmojis\":"));
+    assert!(json.contains("\"outputFilePath\":"));
+    assert!(json.contains("\"metadataJsonPath\":"));
+    assert!(json.contains("\"thumbnailTimestamp\":"));
+    assert!(json.contains("\"thumbnailHeadline\":"));
+    assert!(json.contains("\"thumbnailPath\":"));
+    assert!(json.contains("\"rawFramePath\":"));
+    assert!(json.contains("\"framingMode\":"));
+    assert!(json.contains("\"subtitlePreset\":"));
+    assert!(json.contains("\"emotionTag\":"));
+
+    let deserialized: ClipCandidate =
+        serde_json::from_str(&json).expect("falha ao desserializar ClipCandidate");
+    assert_eq!(clip, deserialized);
+}
+
+#[test]
+fn should_serialize_and_deserialize_word_timestamp_with_camel_case() {
+    let word = WordTimestamp::with_confidence("clippr", 1.25, 2.50, 0.98);
+    let json = serde_json::to_string(&word).expect("falha ao serializar WordTimestamp");
+
+    assert!(json.contains("\"startSeconds\":"));
+    assert!(json.contains("\"endSeconds\":"));
+    assert!(json.contains("\"confidence\":"));
+
+    let deserialized: WordTimestamp =
+        serde_json::from_str(&json).expect("falha ao desserializar WordTimestamp");
+    assert_eq!(word, deserialized);
+}
+
+#[test]
+fn should_serialize_and_deserialize_score_breakdown_with_camel_case() {
+    let scores = ScoreBreakdown::new(95, 90, 85, 80, 75, 70);
+    let json = serde_json::to_string(&scores).expect("falha ao serializar ScoreBreakdown");
+
+    assert!(json.contains("\"hook\":95"));
+    assert!(json.contains("\"retention\":90"));
+    assert!(json.contains("\"emotional\":85"));
+    assert!(json.contains("\"storytelling\":80"));
+    assert!(json.contains("\"standalone\":75"));
+    assert!(json.contains("\"visual\":70"));
+
+    let deserialized: ScoreBreakdown =
+        serde_json::from_str(&json).expect("falha ao desserializar ScoreBreakdown");
+    assert_eq!(scores, deserialized);
 }
