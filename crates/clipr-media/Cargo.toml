@@ -1,0 +1,17 @@
+[package]
+name = "clipr-media"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clipr-domain.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+regex.workspace = true
+tempfile.workspace = true
+tracing.workspace = true
+reqwest = { workspace = true, features = ["blocking"] }
