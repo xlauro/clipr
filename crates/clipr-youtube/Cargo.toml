@@ -1,0 +1,23 @@
+[package]
+name = "clipr-youtube"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clipr-domain.workspace = true
+reqwest.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+tracing.workspace = true
+url.workspace = true
+futures-util.workspace = true
+bytes.workspace = true
+
+
+[dev-dependencies]
+tempfile.workspace = true
+
